@@ -36,6 +36,10 @@ public class ProductService {
         return product.stream().map(this::toProductDTO).toList();
     }
 
+    public void deleteProduct(Long productId) {
+        productRepository.deleteById(productId);
+    }
+
     private ProductResponseDTO toProductDTO(ProductEntity productEntity) {
         return ProductResponseDTO.builder()
                 .id(productEntity.getId())

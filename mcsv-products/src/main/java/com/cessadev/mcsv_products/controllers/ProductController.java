@@ -27,4 +27,10 @@ public class ProductController {
     public void createProduct(@RequestBody ProductRequestDTO productRequestDTO) {
         this.productService.addProduct(productRequestDTO);
     }
+
+    @DeleteMapping("/delete-product-by-id/{productId}")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void deleteProduct(@PathVariable Long productId) {
+        this.productService.deleteProduct(productId);
+    }
 }
