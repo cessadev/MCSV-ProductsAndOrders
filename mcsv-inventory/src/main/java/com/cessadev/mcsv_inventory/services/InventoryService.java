@@ -20,7 +20,7 @@ public class InventoryService {
     private final InventoryRepository inventoryRepository;
 
     public boolean isInStock(String sku) {
-        Optional<InventoryEntity> inventory = inventoryRepository.isInStock(sku);
+        Optional<InventoryEntity> inventory = inventoryRepository.findBySku(sku);
         return inventory.filter(inventoryEntity -> inventoryEntity.getQuantity() > 0).isPresent();
     }
 
@@ -37,6 +37,6 @@ public class InventoryService {
                 errorList.add("Product with sku " + orderItemRequestDTO.getSku() + " has insufficient quantity");
             }
         });
-        return errorList.size() > 0 ? new BaseResponse(errorList.toArray(new String[0])) : new BaseResponse(null);
+        return !errorList.isEmpty() ? new BaseResponse(errorList.toArray(new String[0])) : new BaseResponse(null);
     }
 }

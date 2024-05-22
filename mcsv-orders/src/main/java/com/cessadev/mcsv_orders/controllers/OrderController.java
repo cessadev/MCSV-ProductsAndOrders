@@ -1,10 +1,13 @@
 package com.cessadev.mcsv_orders.controllers;
 
 import com.cessadev.mcsv_orders.model.dtos.OrderRequestDTO;
+import com.cessadev.mcsv_orders.model.dtos.OrderResponseDTO;
 import com.cessadev.mcsv_orders.services.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/order")
@@ -18,5 +21,11 @@ public class OrderController {
     public String createOrder(@RequestBody OrderRequestDTO orderRequestDTO) {
         orderService.createOrder(orderRequestDTO);
         return "Order created successfully";
+    }
+
+    @GetMapping("/find-all-orders")
+    @ResponseStatus(HttpStatus.OK)
+    public List<OrderResponseDTO> getAllOrders() {
+        return orderService.getAllOrders();
     }
 }

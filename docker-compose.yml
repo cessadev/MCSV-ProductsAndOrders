@@ -15,20 +15,20 @@ services:
       - 5432
     command: -p 5432
 
-  ### MySQL database for mcsv-orders
+  ### Postgres database for mcsv-orders
   db-orders:
     container_name: db-orders
-    image: mysql:8.0.0
+    image: postgres:14-alpine3.18
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: mcsv_orders
-      MYSQL_USER: cessadev
-      MYSQL_PASSWORD: password
-      MYSQL_ROOT_PASSWORD: root
+      POSTGRES_DB: mcsv_orders
+      POSTGRES_USER: cessadev
+      POSTGRES_PASSWORD: password
     ports:
-      - 3307:3307
+      - 5434:5434
     expose:
-      - 3307
+      - 5434
+    command: -p 5434
 
   ### Postgres database for mcsv-products
   db-products:

@@ -26,6 +26,7 @@
 		<module>mcsv-inventory</module>
 		<module>mcsv-orders</module>
 		<module>mcsv-products</module>
+		<module>api-gateway</module>
 	</modules>
 
 	<dependencies>

@@ -1,16 +1,15 @@
 package com.cessadev.mcsv_orders.services;
 
+import com.cessadev.mcsv_orders.model.dtos.*;
 import com.cessadev.mcsv_orders.model.entities.OrderEntity;
 import com.cessadev.mcsv_orders.model.entities.OrderItemsEntity;
-import com.cessadev.mcsv_orders.model.dtos.BaseResponse;
-import com.cessadev.mcsv_orders.model.dtos.OrderItemsRequestDTO;
-import com.cessadev.mcsv_orders.model.dtos.OrderRequestDTO;
 import com.cessadev.mcsv_orders.repositories.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -35,7 +34,7 @@ public class OrderService {
             OrderEntity order = new OrderEntity();
             order.setOrderNumber(UUID.randomUUID().toString());
             order.setOrderItems(orderRequestDTO.getOrderItems().stream()
-                    .map(orderItemsRequestDTO -> toOrderItemsEntity(orderItemsRequestDTO, order))
+                    .map(orderItemsRequestDTO -> mapToOrderItemsEntity(orderItemsRequestDTO, order))
                     .toList());
             this.orderRepository.save(order);
         } else {
@@ -43,7 +42,12 @@ public class OrderService {
         }
     }
 
-    private OrderItemsEntity toOrderItemsEntity(OrderItemsRequestDTO orderItemsRequestDTO, OrderEntity orderEntity) {
+    public List<OrderResponseDTO> getAllOrders() {
+        List<OrderEntity> orders = this.orderRepository.findAll();
+        return orders.stream().map(this::mapToOrderResponseDTO).toList();
+    }
+
+    private OrderItemsEntity mapToOrderItemsEntity(OrderItemsRequestDTO orderItemsRequestDTO, OrderEntity orderEntity) {
         return OrderItemsEntity.builder()
                 .id(orderItemsRequestDTO.getId())
                 .sku(orderItemsRequestDTO.getSku())
@@ -51,5 +55,20 @@ public class OrderService {
                 .quantity(orderItemsRequestDTO.getQuantity())
                 .order(orderEntity)
                 .build();
+    }
+
+    private OrderResponseDTO mapToOrderResponseDTO(OrderEntity orderEntity) {
+        return new OrderResponseDTO(
+                orderEntity.getId(),
+                orderEntity.getOrderNumber(),
+                orderEntity.getOrderItems().stream().map(this::mapToOrderItemsResponseDTO).toList());
+    }
+
+    private OrderItemsResponseDTO mapToOrderItemsResponseDTO(OrderItemsEntity orderItemsEntity) {
+        return new OrderItemsResponseDTO(
+                orderItemsEntity.getId(),
+                orderItemsEntity.getSku(),
+                orderItemsEntity.getPrice(),
+                orderItemsEntity.getQuantity());
     }
 }
