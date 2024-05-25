@@ -5,6 +5,7 @@ import com.cessadev.mcsv_inventory.model.dtos.OrderItemsRequestDTO;
 import com.cessadev.mcsv_inventory.services.InventoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class InventoryController {
 
     @GetMapping("/find-by-sku/{sku}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public boolean isInStock(@PathVariable String sku) {
         return inventoryService.isInStock(sku);
     }
