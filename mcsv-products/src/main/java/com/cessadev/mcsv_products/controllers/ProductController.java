@@ -5,6 +5,7 @@ import com.cessadev.mcsv_products.model.dtos.ProductResponseDTO;
 import com.cessadev.mcsv_products.services.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,23 +19,20 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping("/find-all-products")
-    @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ROLE_USER')")
-    public List<ProductResponseDTO> getAllProducts() {
-        return this.productService.findAllProducts();
+    public ResponseEntity<Object> getAllProducts() {
+        return productService.findAllProducts();
     }
 
     @PostMapping("/create-product")
-    @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public void createProduct(@RequestBody ProductRequestDTO productRequestDTO) {
-        this.productService.addProduct(productRequestDTO);
+    public ResponseEntity<String> createProduct(@RequestBody ProductRequestDTO productRequestDTO) {
+        return productService.addProduct(productRequestDTO);
     }
 
     @DeleteMapping("/delete-product-by-id/{productId}")
-    @ResponseStatus(HttpStatus.ACCEPTED)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public void deleteProduct(@PathVariable Long productId) {
-        this.productService.deleteProduct(productId);
+    public ResponseEntity<String> deleteProduct(@PathVariable Long productId) {
+        return productService.deleteProduct(productId);
     }
 }
