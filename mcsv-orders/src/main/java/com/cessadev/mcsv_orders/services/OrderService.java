@@ -1,8 +1,8 @@
 package com.cessadev.mcsv_orders.services;
 
+import com.cessadev.mcsv_orders.mapper.OrderMapper;
 import com.cessadev.mcsv_orders.model.dtos.*;
 import com.cessadev.mcsv_orders.model.entities.OrderEntity;
-import com.cessadev.mcsv_orders.model.entities.OrderItemsEntity;
 import com.cessadev.mcsv_orders.repositories.OrderRepository;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -72,7 +72,7 @@ public class OrderService {
                 OrderEntity order = new OrderEntity();
                 order.setOrderNumber(UUID.randomUUID().toString());
                 order.setOrderItems(orderRequestDTO.getOrderItems().stream()
-                        .map(orderItemsRequestDTO -> mapToOrderItemsEntity(orderItemsRequestDTO, order))
+                        .map(orderItemsRequestDTO -> OrderMapper.mapToOrderItemsEntity(orderItemsRequestDTO, order))
                         .toList());
                 return Mono.fromCallable(() -> {
                     this.orderRepository.save(order);
@@ -92,12 +92,13 @@ public class OrderService {
     }
 
     public ResponseEntity<Object> getAllOrders() {
+        OrderMapper orderMapper = new OrderMapper();
         try {
             List<OrderEntity> orders = this.orderRepository.findAll();
             if (orders.isEmpty()) {
                 return ResponseEntity.noContent().build();
             } else {
-                List<OrderResponseDTO> orderResponseDTOS = orders.stream().map(this::mapToOrderResponseDTO).toList();
+                List<OrderResponseDTO> orderResponseDTOS = orders.stream().map(orderMapper::mapToOrderResponseDTO).toList();
                 return ResponseEntity.ok(orderResponseDTOS);
             }
         } catch (DataAccessException e) {
@@ -109,30 +110,5 @@ public class OrderService {
             log.error("Unexpected error occurred while fetching orders", e);
             return ResponseEntity.status(500).body("Unexpected error occurred while fetching orders"); // HTTP 500 Internal Server Error
         }
-    }
-
-    private OrderItemsEntity mapToOrderItemsEntity(OrderItemsRequestDTO orderItemsRequestDTO, OrderEntity orderEntity) {
-        return OrderItemsEntity.builder()
-                .id(orderItemsRequestDTO.getId())
-                .sku(orderItemsRequestDTO.getSku())
-                .price(orderItemsRequestDTO.getPrice())
-                .quantity(orderItemsRequestDTO.getQuantity())
-                .order(orderEntity)
-                .build();
-    }
-
-    private OrderResponseDTO mapToOrderResponseDTO(OrderEntity orderEntity) {
-        return new OrderResponseDTO(
-                orderEntity.getId(),
-                orderEntity.getOrderNumber(),
-                orderEntity.getOrderItems().stream().map(this::mapToOrderItemsResponseDTO).toList());
-    }
-
-    private OrderItemsResponseDTO mapToOrderItemsResponseDTO(OrderItemsEntity orderItemsEntity) {
-        return new OrderItemsResponseDTO(
-                orderItemsEntity.getId(),
-                orderItemsEntity.getSku(),
-                orderItemsEntity.getPrice(),
-                orderItemsEntity.getQuantity());
     }
 }
