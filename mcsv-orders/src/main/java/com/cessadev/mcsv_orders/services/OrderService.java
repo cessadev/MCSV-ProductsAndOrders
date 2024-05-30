@@ -4,6 +4,9 @@ import com.cessadev.mcsv_orders.mapper.OrderMapper;
 import com.cessadev.mcsv_orders.model.dtos.*;
 import com.cessadev.mcsv_orders.model.entities.OrderEntity;
 import com.cessadev.mcsv_orders.repositories.OrderRepository;
+import com.cessadev.mcsv_orders.events.OrderEvent;
+import com.cessadev.mcsv_orders.model.enums.EOrderStatus;
+import com.cessadev.mcsv_orders.utils.JsonConverterUtils;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
@@ -12,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -27,6 +31,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final WebClient.Builder webClientBuilder;
     private final CircuitBreakerRegistry circuitBreakerRegistry;
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
     public Mono<ResponseEntity<String>> createOrder(OrderRequestDTO orderRequestDTO) {
 
@@ -74,11 +79,22 @@ public class OrderService {
                 order.setOrderItems(orderRequestDTO.getOrderItems().stream()
                         .map(orderItemsRequestDTO -> OrderMapper.mapToOrderItemsEntity(orderItemsRequestDTO, order))
                         .toList());
+
                 return Mono.fromCallable(() -> {
                     this.orderRepository.save(order);
-                    String successMessage = "Order saved successfully with order number: " + order.getOrderNumber();
+                    return order;
+                }).flatMap(savedOrder -> {
+                    // Enviar mensaje a Kafka
+                    return Mono.fromRunnable(() -> {
+                        this.kafkaTemplate.send("orders-topic", JsonConverterUtils.toJson(
+                                new OrderEvent(savedOrder.getOrderNumber(), savedOrder.getOrderItems().size(), EOrderStatus.PLACED)
+                        ));
+                    }).then(Mono.just(savedOrder));
+                }).map(savedOrder -> {
+                    String successMessage = "Order saved successfully with order number: " + savedOrder.getOrderNumber();
                     return ResponseEntity.ok(successMessage);
                 });
+
             } else {
                 String errorMessage = Arrays.toString(result.errorMessage());
                 log.error("Error occurred while creating order: {}", errorMessage);

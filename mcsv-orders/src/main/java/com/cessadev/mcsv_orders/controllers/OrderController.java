@@ -3,7 +3,6 @@ package com.cessadev.mcsv_orders.controllers;
 import com.cessadev.mcsv_orders.model.dtos.OrderRequestDTO;
 import com.cessadev.mcsv_orders.services.OrderService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +22,6 @@ public class OrderController {
     }
 
     @GetMapping("/find-all-orders")
-    @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Object> getAllOrders() {
         return orderService.getAllOrders();
