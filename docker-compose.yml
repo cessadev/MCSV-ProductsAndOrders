@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 services:
   ### Postgres database for mcsv-inventory
   db-inventory:
@@ -15,20 +15,21 @@ services:
       - 5432
     command: -p 5432
 
-  ### Postgres database for mcsv-orders
+  ### MySQL database for mcsv-orders
   db-orders:
     container_name: db-orders
-    image: postgres:16-alpine3.19
+    image: mysql:8.4.0
     restart: unless-stopped
     environment:
-      POSTGRES_DB: mcsv_orders
-      POSTGRES_USER: cessadev
-      POSTGRES_PASSWORD: password
+      MYSQL_DATABASE: db_orders
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
     ports:
-      - 5434:5434
+      - '3306:3306'
     expose:
-      - 5434
-    command: -p 5434
+      - '3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
 
   ### Postgres database for mcsv-products
   db-products:
@@ -106,3 +107,6 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+volumes:
+  mysql_data:

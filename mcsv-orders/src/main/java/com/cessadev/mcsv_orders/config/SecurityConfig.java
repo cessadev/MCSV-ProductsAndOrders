@@ -46,7 +46,7 @@ public class SecurityConfig {
     @Bean
     public JwtDecoder jwtDecoder() {
         // Reemplaza con la URL de tu servidor JWKS
-        String jwkSetUri = "http://localhost:8181/realms/microservicios-realm/protocol/openid-connect/certs";
+        String jwkSetUri = "http://localhost:8181/realms/microservices-realm/protocol/openid-connect/certs";
         return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
     }
 
