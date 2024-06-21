@@ -1,5 +1,6 @@
 package com.cessadev.mcsv_orders.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -25,6 +26,9 @@ import java.util.stream.Collectors;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    @Value("${spring.security.oauth2.resourceserver.jwt.jwt-set-uri}")
+    private String jwtURI;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
@@ -45,9 +49,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        // Reemplaza con la URL de tu servidor JWKS
-        String jwkSetUri = "http://localhost:8181/realms/microservices-realm/protocol/openid-connect/certs";
-        return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+        return NimbusJwtDecoder.withJwkSetUri(jwtURI).build();
     }
 
     @SuppressWarnings("unchecked")
